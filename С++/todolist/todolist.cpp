@@ -8,20 +8,20 @@ struct Task {
     int priority;
     char description[100];
     char date[8];
+    char time[4];
 };
-void addTask(Task tasks[], int size, const int maxLen); // добавляет
-void deleteTask(Task tasks[], int size); // удаляет 
+void addTask(Task tasks[], int& size, const int maxLen); // добавляет
+void deleteTask(Task tasks[], int& size); // удаляет 
 void editTask(Task tasks[], int size); // меняет 
 void searchTasksByTitle(const Task tasks[], int size, const char* title); // поиск по назв
 void searchTasksByPriority(const Task tasks[], int size, int priority); // поиск по приоритету
 void searchTasksByDescription(const Task tasks[], int size, const char* description); //поиск по описанию
 void searchTasksByDate(const Task tasks[], int size, const char* date); // поиск по дате
-void displayTasks(const Task tasks[], int size); // вывод всех елементов 
+void displayTasks(const Task tasks[], int& size); // вывод всех елементов 
 void sortTasksByPriority(Task tasks[], int size); // сортировка по приоритету
 void sortTasksByDateTime(Task tasks[], int size); // сортировка по дате 
-void saveTasksToFile(const Task tasks[], int size, const char* filename); // добавления дела в файл
-void loadTasksFromFile(Task tasks[], int& size, const char* filename, const int maxLen); // показать весь файл
-
+// тут еще должна была быть работа с файлом,то есть сохранение инфы в файл, но я не успела
+int cinNum(); // проверка не строка ли введена
 
 int main() {
     const int maxLen = 100;
@@ -30,14 +30,13 @@ int main() {
 
     int choice;
     do {
-        cout << "\n--- ToDo List ---\n";
+        cout << endl;
         cout << "1. Add Task" << endl;
         cout << "2. Delete Task" << endl;
         cout << "3. Edit Task" << endl;
         cout << "4. Search" << endl;
         cout << "5. Display Tasks" << endl;
         cout << "6. Sort" << endl;
-        cout << "7. File-based work" << endl;
         cout << "0. Exit" << endl;
         cout << "Enter your choice: ";
 
@@ -52,7 +51,8 @@ int main() {
             break;
         case 2:
             system("cls");
-
+            displayTasks(tasks, size);
+            cout << endl;
             deleteTask(tasks, size);
             break;
         case 3:
@@ -78,12 +78,14 @@ int main() {
                 cin.ignore();
                 cin.getline(searchTitle, 100);
                 searchTasksByTitle(tasks, size, searchTitle);
+
                 break;
             case 2:
                 int searchPriority;
                 cout << "Enter the priority to search: ";
-                cin >> searchPriority;
+                searchPriority = cinNum();
                 searchTasksByPriority(tasks, size, searchPriority);
+
                 break;
             case 3:
                 char searchDescription[100];
@@ -91,12 +93,14 @@ int main() {
                 cin.ignore();
                 cin.getline(searchDescription, sizeof(searchDescription));
                 searchTasksByDescription(tasks, size, searchDescription);
+
                 break;
             case 4:
                 char searchDate[20];
                 cout << "Enter the date to search (YYYY-MM-DD): ";
                 cin >> searchDate;
                 searchTasksByDate(tasks, size, searchDate);
+
                 break;
             case 0:
                 break;
@@ -104,6 +108,7 @@ int main() {
                 cout << "Invalid choice. Please enter a valid choice.\n";
                 break;
             }
+            break;
         case 5:
             system("cls");
             displayTasks(tasks, size);
@@ -121,9 +126,11 @@ int main() {
             {
             case 1:
                 sortTasksByPriority(tasks, size);
+                displayTasks(tasks, size);
                 break;
             case 2:
                 sortTasksByDateTime(tasks, size);
+                displayTasks(tasks, size);
                 break;
             case 0:
                 break;
@@ -132,28 +139,7 @@ int main() {
                 cout << "Invalid choice. Please enter a valid choice.\n";
                 break;
             }
-        case 7:
-            system("cls");
-            int fileChoise;
-
-            cout << "Select the value you want! " << endl;
-            cout << "1. Save Tasks to File" << endl;
-            cout << "2. Load Tasks from File" << endl;
-            cout << "0. Exit" << endl;
-            cin >> fileChoise;
-            switch (fileChoise) {
-            case 1:
-           
-                break;
-            case 2:
-
-                break;
-            case 0:
-                break;
-            default:
-                cout << "Invalid choice. Please enter a valid choice.\n";
-                break;
-            }
+            break;
         case 0:
             cout << "Exiting the program. Goodbye!\n";
             break;
@@ -167,7 +153,7 @@ int main() {
 }
 
 
-void addTask(Task tasks[], int size, const int maxLen) {
+void addTask(Task tasks[], int& size, const int maxLen) {
 
     if (size >= maxLen) {
         cout << "The task list is full. Cannot add more tasks.\n";
@@ -179,7 +165,7 @@ void addTask(Task tasks[], int size, const int maxLen) {
     cin.getline(tasks[size].title, 100);
     while (true) {
         cout << "Priority(1-10): ";
-        cin >> tasks[size].priority;
+        tasks[size].priority = cinNum();
 
         if (tasks[size].priority > 10 || tasks[size].priority < 0) {
             cout << "The value is incorrect. Please try again!" << endl;
@@ -203,44 +189,53 @@ void addTask(Task tasks[], int size, const int maxLen) {
 
         break;
     }
+    while (true) {
+
+        cout << "Time (HH:MM): ";
+        cin >> tasks[size].time;
+
+        if (strlen(tasks[size].time) != 4) {
+            cout << "Invalid time format. Please enter the time in HH:MM format.\n";
+            continue;
+        }
+
+        break;
+
+    }
 
 
     size++;
     cout << "Task added successfully.\n";
 
 }
-
-void deleteTask(Task tasks[], int size) {
-    int index;
-
+void deleteTask(Task tasks[], int& size) {
     if (size == 0) {
-        cout << "Task list is empty. No tasks to delete.\n";
+        cout << "Task list is empty!" << endl;
         return;
     }
 
-    while (true) {
-        cout << "Enter the index of the task to delete (0-" << size - 1 << "): ";
-        cin >> index;
+    cout << "Enter the index of the task to delete: ";
+    int index = cinNum();
 
-        if (index < 0 || index >= size) {
-            cout << "Invalid index. Please enter a valid index.\n";
-            continue;
-        }
-
-        break;
+    if (index <= 0 || index > size) {
+        cout << "Invalid index!" << endl;
+        return;
     }
+
+    index--;  // Adjusting the index to match the array indexing (subtract 1)
 
     for (int i = index; i < size - 1; i++) {
         tasks[i] = tasks[i + 1];
     }
 
     size--;
-    cout << "Task deleted successfully!\n";
+
+    cout << "Task deleted successfully!" << endl;
 }
 
 
 void editTask(Task tasks[], int size) {
-    int index;
+    int index = 1;
 
     if (size == 0) {
         cout << "Task list is empty. No tasks to edit.\n";
@@ -248,10 +243,10 @@ void editTask(Task tasks[], int size) {
     }
 
     while (true) {
-        cout << "Enter the index of the task to edit (0-" << size - 1 << "): ";
+        cout << "Enter the index of the task to edit (1 - " << size << "): ";
         cin >> index;
 
-        if (index < 0 || index >= size) {
+        if (index < 1 || index > size) {
             cout << "Invalid index. Please enter a valid index.\n";
             continue;
         }
@@ -261,13 +256,13 @@ void editTask(Task tasks[], int size) {
     cout << "Enter the updated task details" << endl;
     cout << "Title: ";
     cin.ignore();
-    cin.getline(tasks[index].title, 100);
+    cin.getline(tasks[index - 1].title, 100);
 
     while (true) {
         cout << "Priority(1-10): ";
-        cin >> tasks[size].priority;
+        cin >> tasks[index - 1].priority;
 
-        if (tasks[size].priority > 10 || tasks[size].priority < 0) {
+        if (tasks[index - 1].priority > 10 || tasks[index - 1].priority < 1) {
             cout << "The value is incorrect. Please try again!" << endl;
             continue;
         }
@@ -276,14 +271,26 @@ void editTask(Task tasks[], int size) {
 
     cout << "Description: ";
     cin.ignore();
-    cin.getline(tasks[index].description, 100);
+    cin.getline(tasks[index - 1].description, 100);
 
     while (true) {
         cout << "Date (YYYY-MM-DD): ";
-        cin >> tasks[size].date;
+        cin >> tasks[index - 1].date;
 
-        if (strlen(tasks[size].date) != 8) {
+        if (strlen(tasks[index - 1].date) != 10) {
             cout << "Invalid date format. Please enter the date in YYYY-MM-DD format.\n";
+            continue;
+        }
+
+        break;
+    }
+    while (true) {
+
+        cout << "Time (HH:MM): ";
+        cin >> tasks[index - 1].time;
+
+        if (strlen(tasks[index - 1].time) != 5) {
+            cout << "Invalid time format. Please enter the time in HH:MM format.\n";
             continue;
         }
 
@@ -292,6 +299,7 @@ void editTask(Task tasks[], int size) {
 
     cout << "Task edited successfully.\n";
 }
+
 
 
 void searchTasksByTitle(const Task tasks[], int size, const char* title) {
@@ -303,7 +311,7 @@ void searchTasksByTitle(const Task tasks[], int size, const char* title) {
             cout << "Priority: " << tasks[i].priority << endl;
             cout << "Description: " << tasks[i].description << endl;
             cout << "Date: " << tasks[i].date << endl;
-
+            cout << "Time: " << tasks[i].time << endl;
             found = true;
         }
     }
@@ -322,7 +330,7 @@ void searchTasksByPriority(const Task tasks[], int size, int priority) {
             cout << "Priority: " << tasks[i].priority << endl;
             cout << "Description: " << tasks[i].description << endl;
             cout << "Date: " << tasks[i].date << endl;
-
+            cout << "Time: " << tasks[i].time << endl;
             found = true;
         }
     }
@@ -341,11 +349,12 @@ void searchTasksByDescription(const Task tasks[], int size, const char* descript
             cout << "Priority: " << tasks[i].priority << endl;
             cout << "Description: " << tasks[i].description << endl;
             cout << "Date: " << tasks[i].date << endl;
-
+            cout << "Time: " << tasks[i].time << endl;
 
             found = true;
         }
     }
+    cout << endl;
 
     if (!found) {
         cout << "No tasks found with the given description.\n";
@@ -361,13 +370,83 @@ void searchTasksByDate(const Task tasks[], int size, const char* date) {
             cout << "Priority: " << tasks[i].priority << endl;
             cout << "Description: " << tasks[i].description << endl;
             cout << "Date: " << tasks[i].date << endl;
-
+            cout << "Time: " << tasks[i].time << endl;
 
             found = true;
         }
     }
+    cout << endl;
 
     if (!found) {
         cout << "No tasks found with the given date.\n";
     }
+}
+
+void displayTasks(const Task tasks[], int& size) {
+ 
+    cout << "List of tasks:" << endl;
+
+    for (int i = 0; i < size; i++) {
+        cout << endl;
+        cout << "Task " << i + 1 << ":" << endl;
+        cout << "Title: " << tasks[i].title << endl;
+        cout << "Priority: " << tasks[i].priority << endl;
+        cout << "Description: " << tasks[i].description << endl;
+        cout << "Date: " << tasks[i].date << endl;
+        cout << "Time: " << tasks[i].time << endl;
+    }
+    cout << endl;
+}
+
+void sortTasksByPriority(Task tasks[], int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (tasks[j].priority > tasks[j + 1].priority) {
+                Task temp = tasks[j];
+                tasks[j] = tasks[j + 1];
+                tasks[j + 1] = temp;
+            }
+        }
+    }
+
+    cout << "Tasks sorted by priority.";
+    cout << endl;
+}
+
+void sortTasksByDateTime(Task tasks[], int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (strcmp(tasks[j].date, tasks[j + 1].date) > 0 ||
+                (strcmp(tasks[j].date, tasks[j + 1].date) == 0 &&
+                    strcmp(tasks[j].time, tasks[j + 1].time) > 0)) {
+                Task temp = tasks[j];
+                tasks[j] = tasks[j + 1];
+                tasks[j + 1] = temp;
+            }
+        }
+    }
+
+    cout << "Tasks sorted by date and time.";
+    cout << endl;
+}
+
+int cinNum()
+{
+    int num;
+    while (true)
+    {
+        if (cin >> num)
+        {
+            break;
+            // если ввод правильный 
+        }
+        else
+        {
+            cin.clear();
+            cin.ignore(10000000, '\n'); // надеюсь вы не захотите ввести больше этого диапазона :/
+            cout << "You can't enter a string, please enter a number: " << endl;
+            // неправильный 
+        }
+    }
+    return num;
 }
