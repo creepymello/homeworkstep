@@ -6,9 +6,9 @@ using namespace std;
 class MyCar {
 public:
 
-    virtual void drive() = 0;
-    virtual void park() = 0;
-    virtual void doWork() = 0;
+    virtual void drive(){};
+    virtual void park(){};
+    virtual void doWork(){};
 };
 
 // седан
